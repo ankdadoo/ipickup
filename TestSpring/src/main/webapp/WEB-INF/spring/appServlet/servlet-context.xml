@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns="http://www.springframework.org/schema/mvc"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:beans="http://www.springframework.org/schema/beans"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-3.0.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd
+	    http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+	<!-- DispatcherServlet Context: defines this servlet's request-processing infrastructure -->
+	
+	<context:annotation-config />
+	<!-- Enables the Spring MVC @Controller programming model -->
+	<annotation-driven />
+
+	<!-- Handles HTTP GET requests for /resources/** by efficiently serving up static resources in the ${webappRoot}/resources directory -->
+	<resources mapping="/resources/**" location="/resources/" />
+
+	<!-- Resolves views selected for rendering by @Controllers to .jsp resources in the /WEB-INF/views directory -->
+	<beans:bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<beans:property name="prefix" value="/WEB-INF/views/" />
+		<beans:property name="suffix" value=".jsp" />
+	</beans:bean>
+	
+	<context:component-scan base-package="com.pickup" />
+	
+	
+	
+	<beans:bean class="org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping" />
+	
+	<beans:bean
+    class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter">
+    <beans:property name="messageConverters">
+      <beans:list>
+       
+        <beans:ref bean="jsonHttpMessageConverter"/>
+      </beans:list>
+    </beans:property>
+  </beans:bean>
+
+		
+
+
+
+
+<!-- 
+  <beans:bean id="jsonHttpMessageConverter" class="org.springframework.http.converter.json.MappingJacksonHttpMessageConverter" >
+        <beans:property name="objectMapper" ref="hibernateObjectMapper"/>
+    </beans:bean>
+
+	
+	
+	 <beans:bean id="hibernateObjectMapper" class="org.codehaus.jackson.map.ObjectMapper"/>
+		-->
+	
+	
+	<beans:bean id="jsonHttpMessageConverter" class="org.springframework.http.converter.json.MappingJacksonHttpMessageConverter">
+		<beans:property name="supportedMediaTypes" value="application/json" />
+	</beans:bean>
+	
+	
+	
+
+	<!--   
+	 <aop:config>
+
+        <aop:pointcut id="serviceOperation" expression="execution(* *..service.*Service.*(..))"/>
+        <aop:pointcut id="daoOperation" expression="execution(* *..dao.*Dao.*(..))"/>
+
+        <aop:advisor pointcut-ref="serviceOperation" advice-ref="serviceTxAdvice"/>
+        <aop:advisor pointcut-ref="daoOperation" advice-ref="daoTxAdvice"/>
+
+    </aop:config>
+
+    <tx:advice id="serviceTxAdvice">
+        <tx:attributes>
+            <tx:method name="get*" propagation="SUPPORTS" read-only="true"/>
+            <tx:method name="find*" propagation="SUPPORTS" read-only="true"/>
+            <tx:method name="*" propagation="REQUIRED"/>
+        </tx:attributes>
+    </tx:advice>
+
+    <tx:advice id="daoTxAdvice">
+        <tx:attributes>
+            <tx:method name="get*" propagation="SUPPORTS" read-only="true"/>
+            <tx:method name="find*" propagation="SUPPORTS" read-only="true"/>
+             The following should eventually be changed to MANDATORY once all
+            of the code is cleaned up and only services access DAO's directly 
+            <tx:method name="*" propagation="MANDATORY"/>
+        </tx:attributes>
+    </tx:advice>
+	-->
+	
+	
+	
+	
+	<beans:bean id="dataSource" class="org.springframework.jndi.JndiObjectFactoryBean">
+        <beans:property name="jndiName" value="jndi/smefsDbPool"/>
+    </beans:bean>
+    
+    
+	 
+	    <!-- Hibernate SessionFactory -->
+	    <beans:bean id="sessionFactory" class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
+	        <beans:property name="dataSource">
+	       			 <beans:ref local="dataSource" />
+	        </beans:property>
+	        <beans:property name="packagesToScan" value="com.pickup.model"/>
+	
+	     
+	        <beans:property name="hibernateProperties">
+	            <beans:props>
+	                <beans:prop key="hibernate.dialect">org.hibernate.dialect.MySQLDialect</beans:prop>
+                <beans:prop key="hibernate.show_sql">true</beans:prop>
+                <beans:prop key="hibernate.connection.zeroDateTimeBehavior">convertToNull</beans:prop>
+                
+	            </beans:props>
+	        </beans:property>
+	    </beans:bean>
+	 
+  <!-- Transaction manager for a Hibernate SessionFactory -->
+	    <tx:annotation-driven transaction-manager="transactionManager" /> 
+	    
+	    
+	    <beans:bean id="transactionManager" class="org.springframework.orm.hibernate3.HibernateTransactionManager">
+	        <beans:property name="sessionFactory">
+	            <beans:ref local="sessionFactory" />
+	        </beans:property>
+	    </beans:bean>
+	
+</beans:beans>
